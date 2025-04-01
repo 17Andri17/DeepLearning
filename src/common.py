@@ -1,14 +1,8 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-import matplotlib.pyplot as plt
-import numpy as np
-from collections import defaultdict
-from tqdm import tqdm
-
 
 
 def load_data(batch_size=128):
@@ -20,71 +14,23 @@ def load_data(batch_size=128):
 
     cinic_train = DataLoader(
         torchvision.datasets.ImageFolder(cinic_directory + '/train',
-        transform=transforms.Compose([transforms.ToTensor(),
-        transforms.Normalize(mean=cinic_mean, std=cinic_std)])),
+                                         transform=transforms.Compose([transforms.ToTensor(),
+                                                                       transforms.Normalize(mean=cinic_mean,
+                                                                                            std=cinic_std)])),
         batch_size=batch_size, shuffle=True
     )
 
     cinic_test = DataLoader(
         torchvision.datasets.ImageFolder(cinic_directory + '/valid',
-        transform=transforms.Compose([transforms.ToTensor(),
-        transforms.Normalize(mean=cinic_mean, std=cinic_std)])),
+                                         transform=transforms.Compose([transforms.ToTensor(),
+                                                                       transforms.Normalize(mean=cinic_mean,
+                                                                                            std=cinic_std)])),
         batch_size=batch_size, shuffle=False
     )
     return {
         'train': cinic_train,
         'test': cinic_test
     }
-
-def load_data_few_shot(batch_size=128, few_shot_samples_per_class=None):
-    cinic_directory = 'C:/Users/zp13279/Desktop/Repos_other/DeepLearning/kod/data'
-    cinic_mean = [0.47889522, 0.47227842, 0.43047404]
-    cinic_std = [0.24205776, 0.23828046, 0.25874835]
-
-    torch.manual_seed(42)
-
-    train_dataset = torchvision.datasets.ImageFolder(
-        cinic_directory + '/train',
-        transform=transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=cinic_mean, std=cinic_std)
-        ])
-    )
-    
-    if few_shot_samples_per_class is not None:
-        # Create a few-shot dataset
-        few_shot_data = []
-        class_count = defaultdict(int)
-        
-        for img, label in train_dataset:
-            if class_count[label] < few_shot_samples_per_class:
-                few_shot_data.append((img, label))
-                class_count[label] += 1
-                
-            # Stop if we have enough samples for all classes
-            if all(count >= few_shot_samples_per_class for count in class_count.values()):
-                break
-
-        train_dataset = few_shot_data
-
-    cinic_train = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-
-    cinic_test = DataLoader(
-        torchvision.datasets.ImageFolder(cinic_directory + '/valid',
-        transform=transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=cinic_mean, std=cinic_std)
-        ])),
-        batch_size=batch_size, shuffle=False
-    )
-    
-    return {
-        'train': cinic_train,
-        'test': cinic_test
-    }
-
-
-
 
 
 class VGGStyleCNN(nn.Module):
@@ -147,4 +93,3 @@ class VGGStyleCNN(nn.Module):
         x = self.conv_layers(x)
         x = self.fc_layers(x)
         return x
-    
